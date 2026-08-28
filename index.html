@@ -2294,7 +2294,7 @@
 
             // ========== GALLERY ==========
            const galleryImages = [
-    { src: 'images/pic4.jpeg', title: 'Action Shot', category: 'action' },
+    { src: '../images/pic4.jpeg', title: 'Action Shot', category: 'action' },
     { src: 'images/pic2.jpeg', title: 'Night Match', category: 'night' },
     { src: 'images/pic7.jpeg', title: 'Full Turf View', category: 'turf' },
     { src: 'images/boxcricket.webp', title: 'Drone View', category: 'turf' },
@@ -2313,36 +2313,46 @@
 
             const galleryGrid = document.getElementById('galleryGrid');
 
-            function renderGallery(filter = 'all') {
-                galleryGrid.innerHTML = '';
-                const filtered = filter === 'all' ? galleryImages : galleryImages.filter(img => img.category === filter);
+function renderGallery(filter = 'all') {
+    galleryGrid.innerHTML = '';
+    const filtered = filter === 'all'
+        ? galleryImages
+        : galleryImages.filter(img => img.category === filter);
 
-                filtered.forEach((image, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'gallery-item reveal';
-                    item.style.transitionDelay = `${index * 0.05}s`;
-                    item.dataset.index = galleryImages.indexOf(image);
-                    item.innerHTML = `
-                        <img src="${image.src}" alt="${image.title}" loading="lazy">
-                        <div class="gallery-overlay">
-                            <h4>${image.title}</h4>
-                            <span><i class="fas fa-search-plus"></i> Click to view</span>
-                        </div>
-                    `;
-                    galleryGrid.appendChild(item);
-                });
+    filtered.forEach((image, index) => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        item.style.transition = `opacity 0.5s ease ${index * 0.05}s, transform 0.5s ease ${index * 0.05}s`;
+        item.dataset.index = galleryImages.indexOf(image);
 
-                // Re-trigger reveal
-                setTimeout(revealOnScroll, 100);
+        item.innerHTML = `
+            <img src="${image.src}" alt="${image.title}" loading="lazy"
+                 onerror="this.parentElement.style.display='none'">
+            <div class="gallery-overlay">
+                <h4>${image.title}</h4>
+                <span><i class="fas fa-search-plus"></i> Click to view</span>
+            </div>
+        `;
+        galleryGrid.appendChild(item);
 
-                // Lightbox click
-                document.querySelectorAll('.gallery-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        openLightbox(parseInt(item.dataset.index));
-                    });
-                });
-            }
+        // Force visible after a short delay (fixes opacity:0 stuck state)
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, 50);
+        });
+    });
 
+    // Lightbox click handlers
+    document.querySelectorAll('.gallery-item').forEach(item => {
+        item.addEventListener('click', () => {
+            openLightbox(parseInt(item.dataset.index));
+        });
+    });
+}
             renderGallery();
 
             // Gallery Filters
